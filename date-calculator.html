@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日期计算器</title>
+    <style>
+        :root {
+            --primary-color: #10b981;
+            --primary-dark: #059669;
+            --secondary-color: #3b82f6;
+            --bg-light: #f0fdf4;
+            --bg-card: #ffffff;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(180deg, var(--bg-light) 0%, #ecfdf5 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--bg-card);
+            border-radius: 24px;
+            box-shadow: var(--shadow-lg);
+            padding: 32px;
+            max-width: 480px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .header-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 28px;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .tab {
+            padding: 14px 12px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            background: #f9fafb;
+            border: 2px solid transparent;
+        }
+
+        .tab:hover {
+            background: #f3f4f6;
+        }
+
+        .tab.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-dark);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            outline: none;
+            background: white;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 8px;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #047857 100%);
+            border-radius: 16px;
+            display: none;
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .result-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .result-title {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+        }
+
+        .result-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: white;
+            line-height: 1.2;
+        }
+
+        .result-detail {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 8px;
+        }
+
+        .error-message {
+            color: #dc2626;
+            font-size: 13px;
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: #fef2f2;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+            animation: shake 0.3s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+
+        .calculate-type {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .calc-btn {
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+
+        .calc-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .calc-btn.active {
+            background: var(--primary-color);
+            border-color: var(--primary-dark);
+            color: white;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 24px;
+            }
+            
+            .header-title {
+                font-size: 20px;
+            }
+            
+            .result-value {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-icon">📅</div>
+            <h1 class="header-title">日期计算器</h1>
+            <p class="header-subtitle">轻松计算日期差与日期加减</p>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" data-tab="diff">日期差计算</div>
+            <div class="tab" data-tab="addsub">日期加减</div>
+        </div>
+
+        <div class="tab-content active" id="diff">
+            <div class="input-row">
+                <div class="input-group">
+                    <label>开始日期</label>
+                    <input type="date" id="startDate">
+                </div>
+                <div class="input-group">
+                    <label>结束日期</label>
+                    <input type="date" id="endDate">
+                </div>
+            </div>
+            <button class="btn" onclick="calculateDiff()">计算天数差</button>
+            <div class="error-message" id="diffError"></div>
+            <div class="result" id="diffResult">
+                <div class="result-header">
+                    <span class="result-icon">✨</span>
+                    <span class="result-title">计算结果</span>
+                </div>
+                <div class="result-value" id="diffDays">0 天</div>
+                <div class="result-detail" id="diffDetail"></div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="addsub">
+            <div class="input-group">
+                <label>基准日期</label>
+                <input type="date" id="baseDate">
+            </div>
+            <div class="calculate-type">
+                <button class="calc-btn active" id="addBtn" onclick="setCalcType('add')">➕ 加天数</button>
+                <button class="calc-btn" id="subBtn" onclick="setCalcType('sub')">➖ 减天数</button>
+            </div>
+            <div class="input-group">
+                <label>天数</label>
+                <input type="number" id="daysNum" placeholder="请输入天数" min="1">
+            </div>
+            <button class="btn" onclick="calculateAddSub()">计算结果</button>
+            <div class="error-message" id="addsubError"></div>
+            <div class="result" id="addsubResult">
+                <div class="result-header">
+                    <span class="result-icon">🎯</span>
+                    <span class="result-title">计算结果</span>
+                </div>
+                <div class="result-value" id="resultDate"></div>
+                <div class="result-detail" id="resultWeek"></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            生活效率工具 · 日期计算器
+        </div>
+    </div>
+
+    <script>
+        let calcType = 'add';
+
+        function setCalcType(type) {
+            calcType = type;
+            document.getElementById('addBtn').classList.toggle('active', type === 'add');
+            document.getElementById('subBtn').classList.toggle('active', type === 'sub');
+        }
+
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById(this.dataset.tab).classList.add('active');
+            });
+        });
+
+        function showError(elementId, message) {
+            document.getElementById(elementId).textContent = message;
+            document.getElementById(elementId).classList.add('show');
+        }
+
+        function hideError(elementId) {
+            document.getElementById(elementId).classList.remove('show');
+        }
+
+        function calculateDiff() {
+            hideError('diffError');
+            
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            if (!startDate) {
+                showError('diffError', '请选择开始日期');
+                return;
+            }
+
+            if (!endDate) {
+                showError('diffError', '请选择结束日期');
+                return;
+            }
+
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+
+            if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+                showError('diffError', '日期格式不正确');
+                return;
+            }
+
+            const diffTime = Math.abs(end - start);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            const years = Math.floor(diffDays / 365);
+            const remainingDays = diffDays % 365;
+            const months = Math.floor(remainingDays / 30);
+            const days = remainingDays % 30;
+
+            document.getElementById('diffDays').textContent = `${diffDays} 天`;
+            
+            let detail = '';
+            if (years > 0) detail += `${years}年`;
+            if (months > 0) detail += `${months}个月`;
+            if (days > 0) detail += `${days}天`;
+            if (!detail) detail = '0天';
+            
+            document.getElementById('diffDetail').textContent = `约等于 ${detail}`;
+            document.getElementById('diffResult').classList.add('show');
+        }
+
+        function calculateAddSub() {
+            hideError('addsubError');
+            
+            const baseDate = document.getElementById('baseDate').value;
+            const daysNum = parseInt(document.getElementById('daysNum').value);
+
+            if (!baseDate) {
+                showError('addsubError', '请选择基准日期');
+                return;
+            }
+
+            if (isNaN(daysNum) || daysNum <= 0) {
+                showError('addsubError', '请输入有效的天数（大于0）');
+                return;
+            }
+
+            const date = new Date(baseDate);
+            
+            if (isNaN(date.getTime())) {
+                showError('addsubError', '日期格式不正确');
+                return;
+            }
+
+            if (calcType === 'add') {
+                date.setDate(date.getDate() + daysNum);
+            } else {
+                date.setDate(date.getDate() - daysNum);
+            }
+
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            
+            const weekDays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            const weekDay = weekDays[date.getDay()];
+
+            document.getElementById('resultDate').textContent = `${year}年${month}月${day}日`;
+            document.getElementById('resultWeek').textContent = weekDay;
+            document.getElementById('addsubResult').classList.add('show');
+        }
+
+        document.getElementById('startDate').valueAsDate = new Date();
+        document.getElementById('endDate').valueAsDate = new Date();
+        document.getElementById('baseDate').valueAsDate = new Date();
+    </script>
+</body>
+</html>
